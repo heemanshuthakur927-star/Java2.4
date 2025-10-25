@@ -1,0 +1,132 @@
+import java.util.*;
+import java.util.stream.*;
+
+class Main {
+
+
+    static class Employee {
+        String name;
+        int age;
+        double salary;
+
+        Employee(String name, int age, double salary) {
+            this.name = name;
+            this.age = age;
+            this.salary = salary;
+        }
+
+        @Override
+        public String toString() {
+            return name + " | Age: " + age + " | Salary: " + salary;
+        }
+    }
+
+    static void partA() {
+        System.out.println("----- Part A: Sorting Employees -----");
+        List<Employee> employees = Arrays.asList(
+                new Employee("Alice", 28, 50000),
+                new Employee("Bob", 25, 60000),
+                new Employee("Charlie", 30, 55000),
+                new Employee("David", 25, 52000)
+        );
+
+  
+        employees.sort((e1, e2) -> Double.compare(e2.salary, e1.salary));
+
+        employees.forEach(System.out::println);
+        System.out.println();
+    }
+
+
+    static class Student {
+        String name;
+        double gpa;
+        int age;
+
+        Student(String name, double gpa, int age) {
+            this.name = name;
+            this.gpa = gpa;
+            this.age = age;
+        }
+
+ 
+        double getGpa() {
+            return gpa;
+        }
+
+        @Override
+        public String toString() {
+            return name + " | Age: " + age + " | GPA: " + gpa;
+        }
+    }
+
+    static void partB() {
+        System.out.println("----- Part B: Filtering & Sorting Students -----");
+        List<Student> students = Arrays.asList(
+                new Student("Emma", 3.8, 20),
+                new Student("Liam", 3.2, 22),
+                new Student("Olivia", 3.9, 21),
+                new Student("Noah", 2.9, 23)
+        );
+
+
+        List<Student> filtered = students.stream()
+                .filter(s -> s.gpa > 3.5)
+                .sorted(Comparator.comparingDouble(Student::getGpa).reversed())
+                .collect(Collectors.toList());
+
+        filtered.forEach(System.out::println);
+        System.out.println();
+    }
+
+
+    static class Product {
+        String name;
+        String category;
+        double price;
+        int quantity;
+
+        Product(String name, String category, double price, int quantity) {
+            this.name = name;
+            this.category = category;
+            this.price = price;
+            this.quantity = quantity;
+        }
+
+        @Override
+        public String toString() {
+            return name + " | Category: " + category + " | Price: " + price + " | Quantity: " + quantity;
+        }
+    }
+
+    static void partC() {
+        System.out.println("----- Part C: Stream Operations on Products -----");
+        List<Product> products = Arrays.asList(
+                new Product("Laptop", "Electronics", 70000, 5),
+                new Product("Phone", "Electronics", 35000, 10),
+                new Product("Shirt", "Clothing", 1200, 50),
+                new Product("Shoes", "Clothing", 2500, 30)
+        );
+
+
+        List<Product> expensive = products.stream()
+                .filter(p -> p.price > 5000)
+                .sorted(Comparator.comparingDouble(p -> p.price))
+                .collect(Collectors.toList());
+
+        expensive.forEach(System.out::println);
+
+       
+        int totalQuantity = products.stream()
+                .mapToInt(p -> p.quantity)
+                .sum();
+        System.out.println("Total Quantity: " + totalQuantity);
+    }
+
+    
+    public static void main(String[] args) {
+        partA();
+        partB();
+        partC();
+    }
+}
