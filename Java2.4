@@ -1,0 +1,286 @@
+import java.sql.*;
+import java.util.*;
+
+
+// Part (a): Connecting to MySQL and Fetching Data
+
+class DBConnection {
+    private static final String URL = "jdbc:mysql://localhost:3306/testdb";
+    private static final String USER = "root";
+    private static final String PASS = "Vansh@999";
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASS);
+    }
+}
+
+// Part (b): CRUD Operations on Product Table Using JDBC
+
+class ProductCRUD {
+
+    public void createTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS product (" +
+                     "id INT PRIMARY KEY AUTO_INCREMENT, " +
+                     "name VARCHAR(50), price DOUBLE)";
+        try (Connection con = DBConnection.getConnection();
+             Statement st = con.createStatement()) {
+            st.executeUpdate(sql);
+            System.out.println(" Product table created or already exists.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertProduct(String name, double price) {
+        String sql = "INSERT INTO product (name, price) VALUES (?, ?)";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setDouble(2, price);
+            ps.executeUpdate();
+            System.out.println(" Product inserted successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Read all products
+    public void readProducts() {
+        String sql = "SELECT * FROM product";
+        try (Connection con = DBConnection.getConnection();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            System.out.println("------ Product List ------");
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") +
+                                   ", Name: " + rs.getString("name") +
+                                   ", Price: " + rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Update product
+    public void updateProduct(int id, String name, double price) {
+        String sql = "UPDATE product SET name = ?, price = ? WHERE id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setDouble(2, price);
+            ps.setInt(3, id);
+            int rows = ps.executeUpdate();
+            if (rows > 0)
+                System.out.println(" Product updated successfully.");
+            else
+                System.out.println(" Product not found.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Delete product
+    public void deleteProduct(int id) {
+        String sql = "DELETE FROM product WHERE id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            int rows = ps.executeUpdate();
+            if (rows > 0)
+                System.out.println(" Product deleted successfully.");
+            else
+                System.out.println(" Product not found.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+// Part (c): Student Management Application (MVC + JDBC)
+
+
+// Model
+class Student {
+    private int id;
+    private String name;
+    private String course;
+    private double marks;
+
+    public Student(int id, String name, String course, double marks) {
+        this.id = id;
+        this.name = name;
+        this.course = course;
+        this.marks = marks;
+    }
+
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getCourse() { return course; }
+    public double getMarks() { return marks; }
+}
+
+// DAO (Data Access Object)
+class StudentDAO {
+    public void createTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS student (" +
+                     "id INT PRIMARY KEY, " +
+                     "name VARCHAR(50), " +
+                     "course VARCHAR(50), " +
+                     "marks DOUBLE)";
+        try (Connection con = DBConnection.getConnection();
+             Statement st = con.createStatement()) {
+            st.executeUpdate(sql);
+            System.out.println(" Student table created or already exists.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertStudent(Student s) {
+        String sql = "INSERT INTO student (id, name, course, marks) VALUES (?, ?, ?, ?)";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, s.getId());
+            ps.setString(2, s.getName());
+            ps.setString(3, s.getCourse());
+            ps.setDouble(4, s.getMarks());
+            ps.executeUpdate();
+            System.out.println(" Student inserted successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Student> getAllStudents() {
+        List<Student> list = new ArrayList<>();
+        String sql = "SELECT * FROM student";
+        try (Connection con = DBConnection.getConnection();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                Student s = new Student(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("course"),
+                    rs.getDouble("marks")
+                );
+                list.add(s);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public void updateMarks(int id, double marks) {
+        String sql = "UPDATE student SET marks = ? WHERE id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDouble(1, marks);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            System.out.println(" Marks updated successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteStudent(int id) {
+        String sql = "DELETE FROM student WHERE id = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            System.out.println(" Student deleted successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// View
+class StudentView {
+    public void displayStudents(List<Student> students) {
+        System.out.println("------ Student List ------");
+        for (Student s : students) {
+            System.out.println("ID: " + s.getId() +
+                               ", Name: " + s.getName() +
+                               ", Course: " + s.getCourse() +
+                               ", Marks: " + s.getMarks());
+        }
+    }
+}
+
+// Controller
+class StudentController {
+    private StudentDAO dao;
+    private StudentView view;
+
+    public StudentController(StudentDAO dao, StudentView view) {
+        this.dao = dao;
+        this.view = view;
+    }
+
+    public void addStudent(Student s) {
+        dao.insertStudent(s);
+    }
+
+    public void showAllStudents() {
+        List<Student> list = dao.getAllStudents();
+        view.displayStudents(list);
+    }
+
+    public void updateMarks(int id, double marks) {
+        dao.updateMarks(id, marks);
+    }
+
+    public void deleteStudent(int id) {
+        dao.deleteStudent(id);
+    }
+}
+
+
+// Main Class — Execute All Parts
+
+public class JDBCAllParts {
+    public static void main(String[] args) {
+        try {
+            // Load MySQL Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (Exception e) {
+            System.out.println(" JDBC Driver not found.");
+        }
+
+        System.out.println("===== Part (a): Connection Test =====");
+        try (Connection con = DBConnection.getConnection()) {
+            System.out.println(" Connected to Database Successfully: " + con.getMetaData().getURL());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("\n===== Part (b): Product CRUD =====");
+        ProductCRUD productOps = new ProductCRUD();
+        productOps.createTable();
+        productOps.insertProduct("Laptop", 75000);
+        productOps.insertProduct("Mouse", 1200);
+        productOps.readProducts();
+        productOps.updateProduct(1, "Gaming Laptop", 95000);
+        productOps.deleteProduct(2);
+        productOps.readProducts();
+
+        System.out.println("\n===== Part (c): Student Management (MVC) =====");
+        StudentDAO dao = new StudentDAO();
+        StudentView view = new StudentView();
+        StudentController controller = new StudentController(dao, view);
+
+        dao.createTable();
+        controller.addStudent(new Student(1, "Vansh", "Computer Science", 90));
+        controller.addStudent(new Student(2, "Aditi", "Electronics", 85));
+        controller.showAllStudents();
+        controller.updateMarks(2, 88);
+        controller.showAllStudents();
+        controller.deleteStudent(1);
+        controller.showAllStudents();
+    }
+}
